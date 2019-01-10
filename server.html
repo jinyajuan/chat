@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="server.css">
+    <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+    <script>
+        let sock=io.connect("ws://localhost:8080/")
+
+        //断网状态
+        sock.on("connect",()=>{
+            // alert("已连接");
+            document.getElementsByClassName("warning")[0].style.display="none"
+        })
+        sock.on("disconnect",()=>{
+            // alert("已断开");
+            document.getElementsByClassName("warning")[0].style.display="block"
+        })
+
+
+        //聊天室
+        window.onload=function () {
+            let oTex=document.getElementById("txt1")
+            let oBtn=document.getElementById("btn1")
+            let oUl=document.getElementById("ul1")
+
+            //发送消息
+            oBtn.onclick=function () {
+                sock.emit("msg",oTex.value)
+
+                let oLi=document.createElement("li")
+                oLi.className="me"
+
+                for(let i=0;i<2;i++){
+                    if(i===0){    //添加头像
+                        let oSpan=document.createElement("span")
+                        oSpan.classList.add("pic","pic_me")
+                        oSpan.innerHTML=`<img src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2152545027,476753777&fm=27&gp=0.jpg" alt="">`
+                        oLi.appendChild(oSpan)
+                    }else{    //聊天内容
+                        let oSpan=document.createElement("span")
+                        oSpan.innerHTML=oTex.value;
+                        oSpan.classList.add("word","word_me")
+
+                        oTex.value="";   //清空
+                        oLi.appendChild(oSpan)
+                    }
+                }
+                oUl.appendChild(oLi)
+            }
+
+            //接收消息
+            sock.on("msg",str=>{
+                let oLi=document.createElement("li")
+                oLi.className="you"
+
+                for(let i=0;i<2;i++){
+                    if(i===0){
+                        let oSpan=document.createElement("span")
+                        oSpan.classList.add("pic","pic_you")
+                        oSpan.innerHTML=`<img src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2152545027,476753777&fm=27&gp=0.jpg" alt="">`
+                        oLi.appendChild(oSpan)
+                    }else{
+                        let oSpan=document.createElement("span")
+                        oSpan.innerHTML=str;
+                        oSpan.classList.add("word","word_you")
+                        oLi.appendChild(oSpan)
+                    }
+                }
+                oUl.appendChild(oLi)
+            })
+        }
+    </script>
+</head>
+<body>
+
+<div id="chat">
+    <div class="err_box">
+        <span class="warning">无法连接到服务器，请检查网络~</span>
+    </div>
+    <ul id="ul1"></ul>
+    <textarea name="" id="txt1" cols="60" rows="10"></textarea>
+    <input type="button" value="发送" id="btn1">
+</div>
+
+</body>
+</html>
